@@ -1,0 +1,2 @@
+hyperlpr==0.0.2
+pillow==9.0.1
