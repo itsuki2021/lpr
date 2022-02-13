@@ -5,7 +5,7 @@
 ```bash
 pip install -r requirements.txt
 ```
-安装完毕后需要修改hyperlpr源码中的两个小bug
+安装完毕后需要修改[hyperlpr](https://github.com/szad670401/HyperLPR) 库中的两个小bug
 * https://github.com/szad670401/HyperLPR/issues/318
 * https://github.com/szad670401/HyperLPR/issues/334
 
