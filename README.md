@@ -1,20 +1,19 @@
 # lpr
-车牌识别
+车牌识别， 参考链接：[szad670401/HyperLPR](https://github.com/szad670401/HyperLPR)
 
 ## 1.环境安装
 ```bash
 pip install -r requirements.txt
 ```
-安装完毕后需要修改[hyperlpr](https://github.com/szad670401/HyperLPR) 库中的两个小bug
-* https://github.com/szad670401/HyperLPR/issues/318
-* https://github.com/szad670401/HyperLPR/issues/334
 
 ## 2.运行车牌识别脚本
-将测试图像放入[data/](data)文件夹中
+将测试图像放入data文件夹中
 ```bash
-python demo_lpr.py
+python detect.py
 ```
 输出结果将保存至output文件夹
 
 ## 3.训练
-待完成
+[armaab/hyperlpr-train ](https://github.com/armaab/hyperlpr-train)
+链接中模型保存格式为tensorflow默认格式（saved_model），并提供了.h5格式转换，但与推理代码中的模型格式不符（caffe model），
+训练结果的使用方式未知， 初步判定训练脚本不可用
