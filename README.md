@@ -7,7 +7,7 @@ pip install -r requirements.txt
 ```
 
 ## 2.运行车牌识别脚本
-修改[detect.py](detect.py)中的参数
+修改[config.yaml](config/config.yaml)中的参数后运行detect.py脚本
 ```bash
 python detect.py
 ```

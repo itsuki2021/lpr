@@ -1,12 +1,16 @@
+from src.model.hyperlpr import LPR
+from src.utils.img_plot import putCnText
 from http.client import HTTPConnection
-from model.hyperlpr import *
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image
+from argparse import ArgumentParser
+import numpy as np
 import json
 import hashlib
 import time
 import cv2
 import io
 import sys
+import yaml
 
 
 def encrypt(s: str) -> str:
@@ -20,48 +24,26 @@ def encrypt(s: str) -> str:
     return (enc.hexdigest()).lower()
 
 
-def putCnText(img, text, org, font, textColor=(0, 255, 0), textSize=20):
-    """ 图像绘制中文
-
-    :param img:         输入图像
-    :param text:        绘制文本
-    :param org:         绘制位置
-    :param font:        字体
-    :param textColor:   文本颜色
-    :param textSize:    文本大小
-    :return:            绘制后的图像
-    """
-    if isinstance(img, np.ndarray):
-        img = Image.fromarray(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
-
-    draw = ImageDraw.Draw(img)
-    img_font = ImageFont.truetype(font, textSize, encoding="utf-8")
-    draw.text(xy=org, text=text, fill=textColor, font=img_font)
-    return cv2.cvtColor(np.asarray(img), cv2.COLOR_RGB2BGR)
-
-
 if __name__ == '__main__':
-    # 参数
-    host = '8.141.69.166'                                       # 主机地址
-    port = 10256                                                # 端口
-    usr = 'admin'                                               # 用户名
-    pwd = 'admin'                                               # 密码
-    method = 'GET'                                              # 请求方法
-    serial = '34020000001110000031'                             # 摄像头设备号
-    channel = 1                                                 # 设备通道
-    checkpoint_folder = "checkpoint/"                           # 模型路径
-    font = "/usr/share/fonts/win10/STFANGSO.TTF" \
-        if sys.platform == "linux" else "font/simsun.ttc"       # 中文字体，linux系统下需要自行安装STFANGSO.TTF字体
-    num_test = 10                                               # 测试次数
-    conf = 0.5                                                  # 推理置信度阈值
+    parser = ArgumentParser()
+    parser.add_argument('--config', type=str, default='config/config.yaml', help='yaml config file')
+    opt = parser.parse_args()
 
-    # 登录，获取token
+    # 读取参数
+    try:
+        with open(opt.config, 'r', encoding='utf-8') as f:
+            cfg = yaml.safe_load(f)
+    except Exception as e:
+        print(f'Can not found {opt.config}\n\t{e}')
+        sys.exit(-1)
+
+    # 登录LiveGBS，获取token
     url_login = f'/api/v1/login?' \
-                f'username={usr}&password={encrypt(pwd)}'
+                f'username={cfg["usr"]}&password={encrypt(cfg["pwd"])}'
     headers = {'Content-Type': 'text/html;charset=utf-8'}
     try:
-        conn = HTTPConnection(host=host, port=port)
-        conn.request(method=method, url=url_login, headers=headers)
+        conn = HTTPConnection(host=cfg["host"], port=cfg["port"])
+        conn.request(method=cfg["method"], url=url_login, headers=headers)
         rsp = conn.getresponse()
         print('Login')
         print('\tResponse.status' + str(rsp.status))
@@ -76,14 +58,15 @@ if __name__ == '__main__':
     # 请求实时快照
     url_snap = f'/api/v1/device/channelsnap?' \
                f'token={token}' \
-               f'&serial={serial}' \
-               f'&channel={channel}' \
+               f'&serial={cfg["serial"]}' \
+               f'&channel={cfg["channel"]}' \
                f'&realtime=true'
     try:
-        PR = LPR(checkpoint_folder, conf=conf)
-        for i in range(num_test):
+        # 加载识别模型
+        PR = LPR(cfg["checkpoint_folder"], conf=cfg["conf"])
+        for i in range(cfg["num_test"]):
             tic = time.time()
-            conn.request(method=method, url=url_snap)
+            conn.request(method=cfg["method"], url=url_snap)
             rsp = conn.getresponse()
             print(f'\nSnap {i}')
             print('\tResponse.status' + str(rsp.status))
@@ -99,12 +82,17 @@ if __name__ == '__main__':
             print(f'\t{result}')
             print(f'Total cost\n\t{(toc - tic) * 1000:.2f}ms')
             for i in range(len(result)):
-                txt, conf, bbox = result[i]     # 字符，自信度，位置
+                txt, conf, bbox = result[i]     # 字符，自信度，边界框
                 cv2.rectangle(img, pt1=bbox[:2], pt2=bbox[2:], color=(0, 0, 255), thickness=1, lineType=cv2.LINE_AA)
-                img = putCnText(img, f'{txt} | {conf:.2f}', (bbox[0], bbox[1] - 30), font, (255, 0, 0), 30)
+                img = putCnText(img,
+                                text=f'{txt} | {conf:.2f}',
+                                org=(bbox[0], bbox[1] - 30),
+                                font='font/simsun.ttc',
+                                textColor=(255, 0, 0),
+                                textSize=30)
             cv2.namedWindow("image", cv2.WINDOW_NORMAL)
             cv2.imshow("image", img)
-            cv2.waitKey(1)
+            cv2.waitKey(2)
     except Exception as e:
         print(f'\nError in inference\n\t{e}')
         sys.exit(-1)
