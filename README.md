@@ -7,11 +7,10 @@ pip install -r requirements.txt
 ```
 
 ## 2.运行车牌识别脚本
-将测试图像放入data文件夹中
+修改[detect.py](detect.py)中的参数
 ```bash
 python detect.py
 ```
-输出结果将保存至output文件夹
 
 ## 3.训练
 [armaab/hyperlpr-train ](https://github.com/armaab/hyperlpr-train)

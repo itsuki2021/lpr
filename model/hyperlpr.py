@@ -6,7 +6,7 @@ from .table_chs import chars
 
 
 class LPR:
-    def __init__(self, folder):
+    def __init__(self, folder, conf: float):
         """
         Init the recognition instance.
 
@@ -31,6 +31,7 @@ class LPR:
         self.modelRecognition = cv2.dnn.readNetFromCaffe(*modelRecognitionPath)
         self.ssd_detection = cv2.dnn.readNetFromCaffe(*mini_ssd_path)
         self.refine_net = cv2.dnn.readNetFromCaffe(*refine_net_path)
+        self.conf = conf
 
     def detect_ssd(self, im):
         """
@@ -52,7 +53,7 @@ class LPR:
         cvOut = self.ssd_detection.forward()
         for detection in cvOut[0, 0, :, :]:
             score = float(detection[2])
-            if score > 0.5:
+            if score > self.conf:
                 x1 = int(detection[3] * cols)
                 y1 = int(detection[4] * rows)
                 x2 = int(detection[5] * cols)

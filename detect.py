@@ -10,12 +10,27 @@ import sys
 
 
 def encrypt(s: str) -> str:
+    """ md5加密，小写32位
+
+    :param s: 输入字符串
+    :return: 加密字符串
+    """
     enc = hashlib.md5()
     enc.update(s.encode('utf-8'))
     return (enc.hexdigest()).lower()
 
 
 def putCnText(img, text, org, font, textColor=(0, 255, 0), textSize=20):
+    """ 图像绘制中文
+
+    :param img:         输入图像
+    :param text:        绘制文本
+    :param org:         绘制位置
+    :param font:        字体
+    :param textColor:   文本颜色
+    :param textSize:    文本大小
+    :return:            绘制后的图像
+    """
     if isinstance(img, np.ndarray):
         img = Image.fromarray(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
 
@@ -38,20 +53,25 @@ if __name__ == '__main__':
     font = "/usr/share/fonts/win10/STFANGSO.TTF" \
         if sys.platform == "linux" else "font/simsun.ttc"       # 中文字体，linux系统下需要自行安装STFANGSO.TTF字体
     num_test = 10                                               # 测试次数
+    conf = 0.5                                                  # 推理置信度阈值
 
     # 登录，获取token
     url_login = f'/api/v1/login?' \
                 f'username={usr}&password={encrypt(pwd)}'
     headers = {'Content-Type': 'text/html;charset=utf-8'}
-    conn = HTTPConnection(host=host, port=port)
-    conn.request(method=method, url=url_login, headers=headers)
-    rsp = conn.getresponse()
-    print('Login')
-    print('\tResponse.status' + str(rsp.status))
-    print('\tRespond.reason' + str(rsp.reason))
-    bts = rsp.read()
-    data = json.loads(str(bts, 'utf-8'))
-    token = data['URLToken']
+    try:
+        conn = HTTPConnection(host=host, port=port)
+        conn.request(method=method, url=url_login, headers=headers)
+        rsp = conn.getresponse()
+        print('Login')
+        print('\tResponse.status' + str(rsp.status))
+        print('\tRespond.reason' + str(rsp.reason))
+        bts = rsp.read()
+        data = json.loads(str(bts, 'utf-8'))
+        token = data['URLToken']
+    except Exception as e:
+        print(f'\nFailed to login\n\t{e}')
+        sys.exit(-1)
 
     # 请求实时快照
     url_snap = f'/api/v1/device/channelsnap?' \
@@ -59,30 +79,34 @@ if __name__ == '__main__':
                f'&serial={serial}' \
                f'&channel={channel}' \
                f'&realtime=true'
-    PR = LPR(checkpoint_folder)
-    for i in range(num_test):
-        tic = time.time()
-        conn.request(method=method, url=url_snap)
-        rsp = conn.getresponse()
-        print(f'\nSnap {i}')
-        print('\tResponse.status' + str(rsp.status))
-        print('\tRespond.reason' + str(rsp.reason))
-        bts = rsp.read()
-        img = np.asarray(Image.open(io.BytesIO(bts)))
-        conn.close()
+    try:
+        PR = LPR(checkpoint_folder, conf=conf)
+        for i in range(num_test):
+            tic = time.time()
+            conn.request(method=method, url=url_snap)
+            rsp = conn.getresponse()
+            print(f'\nSnap {i}')
+            print('\tResponse.status' + str(rsp.status))
+            print('\tRespond.reason' + str(rsp.reason))
+            bts = rsp.read()
+            img = np.asarray(Image.open(io.BytesIO(bts)))
+            conn.close()
 
-        # 推理
-        print(f'Inference {i}')
-        result = PR.plate_recognition(img, minSize=30, charSelectionDeskew=True)
-        toc = time.time()
-        print(f'\t{result}')
-        print(f'Total cost\n\t{(toc - tic) * 1000:.2f}ms')
-        for i in range(len(result)):
-            txt, conf, bbox = result[i]     # 字符，自信度，位置
-            cv2.rectangle(img, pt1=bbox[:2], pt2=bbox[2:], color=(0, 0, 255), thickness=1, lineType=cv2.LINE_AA)
-            img = putCnText(img, txt, (bbox[0], bbox[1] - 30), font, (255, 0, 0), 30)
-        cv2.namedWindow("image", cv2.WINDOW_NORMAL)
-        cv2.imshow("image", img)
-        cv2.waitKey(2)
+            # 推理
+            print(f'Inference {i}')
+            result = PR.plate_recognition(img, minSize=30, charSelectionDeskew=True)
+            toc = time.time()
+            print(f'\t{result}')
+            print(f'Total cost\n\t{(toc - tic) * 1000:.2f}ms')
+            for i in range(len(result)):
+                txt, conf, bbox = result[i]     # 字符，自信度，位置
+                cv2.rectangle(img, pt1=bbox[:2], pt2=bbox[2:], color=(0, 0, 255), thickness=1, lineType=cv2.LINE_AA)
+                img = putCnText(img, f'{txt} | {conf:.2f}', (bbox[0], bbox[1] - 30), font, (255, 0, 0), 30)
+            cv2.namedWindow("image", cv2.WINDOW_NORMAL)
+            cv2.imshow("image", img)
+            cv2.waitKey(1)
+    except Exception as e:
+        print(f'\nError in inference\n\t{e}')
+        sys.exit(-1)
 
     print("Done.")
