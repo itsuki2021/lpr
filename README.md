@@ -12,7 +12,7 @@ pip install -r requirements.txt
 python detect.py
 ```
 
-## 3.训练
-[armaab/hyperlpr-train ](https://github.com/armaab/hyperlpr-train)
-链接中模型保存格式为tensorflow默认格式（saved_model），并提供了.h5格式转换，但与推理代码中的模型格式不符（caffe model），
-训练结果的使用方式未知， 初步判定训练脚本不可用
+## 3.MMOCR torch-serve
+```bash
+torchserve --start --ncs --model-store /home/model-server/model-store/ --models all
+```
