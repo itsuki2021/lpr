@@ -5,6 +5,4 @@ pwd: 'admin'                        # 密码
 method: 'GET'                       # 请求方法
 serial: '34020000001110000031'      # 摄像头设备号
 channel: 1                          # 设备通道
-checkpoint_folder: "checkpoint/"    # 车牌识别模型路径
 num_test: 10                        # 测试次数
-conf: 0.5                           # 推理置信度阈值
