@@ -3,3 +3,4 @@ pillow==9.0.1
 numpy
 pyyaml
 requests
+loguru
