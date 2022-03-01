@@ -11,8 +11,8 @@ ts:
   inference_addr: '192.168.1.10:8080'   # 服务地址
 # 滑窗推理参数
 infer:
-  slice_height: 800                     # 窗口高度
-  slice_width: 800                      # 窗口宽度
+  slice_height: 736                     # 窗口高度
+  slice_width: 1333                     # 窗口宽度
   slice_height_overlap: 0.1             # 窗口y方向重叠率
   slice_width_overlap: 0.1              # 窗口x方向重叠率
   threshold_det: 0.5                    # 检测阈值

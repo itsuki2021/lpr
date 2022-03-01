@@ -15,7 +15,7 @@ def draw_result(img: np.ndarray, recog_result):
                       pt1=[int(v) for v in box[:2]],
                       pt2=[int(v) for v in box[2:4]],
                       color=(0, 255, 0),
-                      thickness=4)
+                      thickness=5)
         try:
             img_copy = putCnText(img=img_copy,
                                  text=f'{text}|{score:.2f}',
@@ -49,14 +49,14 @@ class OCRClient:
                                     olp_w_ratio=slice_width_overlap)
         bboxes = np.ndarray(shape=(0, 5), dtype=float)  # object bboxes
         for j, win in enumerate(windows):
-            logger.info(f"\t\twindows: {j + 1}/{len(windows)}")
+            logger.info(f"\twindows: {j + 1}/{len(windows)}")
             data = cv2.imencode('.jpg', img[win[1]:win[3], win[0]:win[2], :])[1].tobytes()
             response = requests.post(self.url_det, data)
             boundary_result = response.json()['boundary_result']
             for poly in boundary_result:
                 score_det = poly[-1]
                 if score_det < threshold_det:
-                    logger.info(f"Not enough detect confidence. recog {score_det} < threshold {threshold_det}")
+                    logger.warning(f"\tNot enough detect confidence. recog {score_det} < threshold {threshold_det}")
                     continue
                 poly = [int(v) for v in poly]
                 poly = [int(poly[k]) + win[0] if k % 2 == 0 else int(poly[k]) + win[1] for k in range(len(poly) - 1)]
@@ -89,12 +89,12 @@ class OCRClient:
         logger.info("text recognizing...")
         recog_result = []
         for j, box in enumerate(bboxes):
-            logger.info(f"\t\tbox: {j + 1}/{len(bboxes)}")
+            logger.info(f"\tbox: {j + 1}/{len(bboxes)}")
             data_lp = cv2.imencode('.jpg', img[int(box[1]):int(box[3]), int(box[0]):int(box[2]), :])[1].tobytes()
             response = requests.post(self.url_recog, data_lp)
             text, score_ocr = response.json()['text'], response.json()['score']
             if score_ocr < threshold_recog:
-                logger.info(f"Not enough detect confidence. recog {score_ocr} < threshold {threshold_recog}")
+                logger.warning(f"\tNot enough detect confidence. recog {score_ocr} < threshold {threshold_recog}")
                 continue
 
             recog_result.append({
