@@ -1,3 +1,4 @@
+# FROM pytorch/torchserve:0.5.2-cpu
 docker run -d --rm --shm-size=1g \
         --ulimit memlock=-1 \
         --ulimit stack=67108864 \
