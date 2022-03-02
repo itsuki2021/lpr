@@ -15,8 +15,8 @@ infer:
   slice_width: 1333                     # 窗口宽度
   slice_height_overlap: 0.1             # 窗口y方向重叠率
   slice_width_overlap: 0.1              # 窗口x方向重叠率
-  threshold_det: 0.5                    # 检测阈值
-  threshold_recog: 0.5                  # 识别阈值
+  threshold_det: 0.8                    # 检测阈值
+  threshold_recog: 0.8                  # 识别阈值
 # 输入输出
 io:
   input_folder: 'data/'                 # 输入文件夹

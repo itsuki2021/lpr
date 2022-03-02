@@ -56,13 +56,15 @@ class OCRClient:
             for poly in boundary_result:
                 score_det = poly[-1]
                 if score_det < threshold_det:
-                    logger.warning(f"\tNot enough detect confidence. recog {score_det} < threshold {threshold_det}")
+                    logger.warning(f"\tNot enough detect confidence. score {score_det:.4f} < threshold {threshold_det}")
                     continue
                 poly = [int(v) for v in poly]
                 poly = [int(poly[k]) + win[0] if k % 2 == 0 else int(poly[k]) + win[1] for k in range(len(poly) - 1)]
                 xx = poly[0::2]
                 yy = poly[1::2]
-                box = np.array([min(xx), min(yy), max(xx), max(yy), score_det], dtype=float).reshape(1, 5)
+                box = np.array([max(min(xx), 0), max(min(yy), 0),
+                                min(max(xx), img.shape[1]), min(max(yy), img.shape[0]),
+                                score_det], dtype=float).reshape(1, 5)
                 bboxes = np.concatenate((bboxes, box), axis=0)
         logger.info(f"number of objects: {len(bboxes)}")
 
@@ -94,7 +96,7 @@ class OCRClient:
             response = requests.post(self.url_recog, data_lp)
             text, score_ocr = response.json()['text'], response.json()['score']
             if score_ocr < threshold_recog:
-                logger.warning(f"\tNot enough detect confidence. recog {score_ocr} < threshold {threshold_recog}")
+                logger.warning(f"\tNot enough detect confidence. score {score_ocr:.4f} < threshold {threshold_recog}")
                 continue
 
             recog_result.append({
