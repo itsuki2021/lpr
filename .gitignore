@@ -134,3 +134,4 @@ dmypy.json
 *.bmp
 *.png
 *.mar
+*.json

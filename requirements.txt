@@ -4,3 +4,4 @@ numpy
 pyyaml
 requests
 loguru
+tqdm
