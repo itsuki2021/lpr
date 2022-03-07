@@ -19,5 +19,5 @@ infer:
   threshold_recog: 0.8                  # 识别阈值
 # 输入输出
 io:
-  input_folder: 'data/'                 # 输入文件夹
-  output_folder: 'output/'              # 输出文件夹
+  input_folder: 'data/infer_in'         # 输入文件夹
+  output_folder: 'data/infer_out'       # 输出文件夹

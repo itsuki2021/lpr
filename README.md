@@ -1,5 +1,6 @@
 # lpr
 mmocr + torchserve，车牌识别
+![avatar](data/demo.jpeg)
 
 ## 1.环境安装
 ```bash

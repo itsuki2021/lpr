@@ -24,8 +24,8 @@ if __name__ == '__main__':
             "threshold_recog": 0.7,
         },
         "io": {
-            "input_folder": '../data/',
-            "output_folder": '../output/'
+            "input_folder": '../data/infer_in',
+            "output_folder": '../data/infer_out'
         }
     }
     args = Namespace(**cfg)
