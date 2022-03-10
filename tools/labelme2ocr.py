@@ -1,3 +1,4 @@
+import shutil
 from argparse import ArgumentParser
 from labelme2icdar import make_dirs
 from loguru import logger
@@ -80,5 +81,7 @@ if __name__ == '__main__':
 
             with open(os.path.join(ann_out_prefix, f"{stage}.txt"), mode="w+", encoding="utf-8") as f:
                 f.write(ann_text)
+
+    shutil.copy("../torchserve/dict_printed_chinese_alpha_lp.txt", ann_out_prefix)
 
     logger.info("Done.")
